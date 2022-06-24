@@ -17,6 +17,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import androidx.databinding.DataBindingUtil
 import com.example.pamoproject.POJO.ModelClass
 import com.example.pamoproject.Utilities.ApiUtilities
@@ -27,6 +28,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.math.RoundingMode
+import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -39,27 +41,23 @@ class MainActivity : AppCompatActivity() {
     private lateinit var activityMainBinding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        /**
-         *Start of applications
-         *
-         * */
         super.onCreate(savedInstanceState)
         activityMainBinding=DataBindingUtil.setContentView(this,R.layout.activity_main)
         supportActionBar?.hide()
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-        activityMainBinding.rlMainLayout.visibility= View.GONE// the application UI is not visible until the user gives permission to download the location
+        activityMainBinding.rlMainLayout.visibility= View.GONE
         getCurrentLocation()
 
-        activityMainBinding.etGetCityName.setOnEditorActionListener ({ v, actionId, keyEvent ->
+        activityMainBinding.etGetCityName.setOnEditorActionListener ({ _, actionId, _ ->
             if(actionId == EditorInfo.IME_ACTION_SEARCH)
             {
                 getCityWeather(activityMainBinding.etGetCityName.text.toString())
                 val view = this.currentFocus
-                if(view != null)// if view is not null, then we still have the keyboard
+                if(view != null)
                 {
                     val imm:InputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                     imm.hideSoftInputFromWindow(view.windowToken, 0)
-                    activityMainBinding.etGetCityName.clearFocus()//keyboard hiding
+                    activityMainBinding.etGetCityName.clearFocus()
                 }
                 true
             }
@@ -67,21 +65,13 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-
     private fun getCityWeather(cityName: String) {
-        /**
-         *This method retrieves the weather data and then checks if the response was successful.
-         * If so, the screen displays the weather data retrieved after the city name you entered.
-         *
-         * @param[cityName] entered city name
-         *
-         * */
 
         activityMainBinding.pbLoading.visibility = View.VISIBLE
-        ApiUtilities.getApiInterface()?.getCityWeatherData(cityName, API_KEY)?.enqueue(object : Callback<ModelClass> {//download weather data by city name
+        ApiUtilities.getApiInterface()?.getCityWeatherData(cityName, API_KEY)?.enqueue(object : Callback<ModelClass> {
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onResponse(call: Call<ModelClass>, response: Response<ModelClass>) {
-                setDataOnView(response.body())//we show the downloaded data in our UI
+                setDataOnView(response.body())
             }
 
             override fun onFailure(call: Call<ModelClass>, t: Throwable) {
@@ -93,18 +83,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getCurrentLocation(){
-        /**
-         * The method checks whether permissions have been granted and whether
-         * location has been enabled to retrieve the current location, if so the weather data is displayed from the fetched location
-         *
-         * */
-        if(checkPermissions())// First we check if the rights have been granted
+        if(checkPermissions())
         {
-            if(isLocationEnabled()) // check if location is enabled
+            if(isLocationEnabled())
             {
-                // is on, we download the geographical coordinates
                 if (ActivityCompat.checkSelfPermission(
-                        //query whether the application can still have permission to store location data
                         this,android.Manifest.permission.ACCESS_FINE_LOCATION
                 )!= PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                         this,android.Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -120,12 +103,12 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(this,"Null Recieved",Toast.LENGTH_SHORT).show()
                     }
                     else{
-                        //retrieving weather through downloaded location data
+                        //fetch weather here
                         fetchCurrentLocationWeather(location.latitude.toString(),location.longitude.toString())
                     }
                 }
             }
-            else{//open settings to enable location
+            else{
                 Toast.makeText(this,"Turn on location", Toast.LENGTH_SHORT).show()
                 val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 startActivity(intent)
@@ -137,27 +120,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun fetchCurrentLocationWeather(latitude: String, longitude: String) {
-        /***
-         *The method retrieves the weather data and then checks if the response was successful,
-         * if so, the weather data retrieved after the location will be displayed on the screen.
-         * @param1[latitude] the latitude that was accessed
-         * @param2[longitude] the longitude that was accessed
-         *
-         */
 
         activityMainBinding.pbLoading.visibility = View.VISIBLE
-        ApiUtilities.getApiInterface()?.getCurrentWeatherData(latitude,longitude,API_KEY)?.enqueue(object:Callback<ModelClass>//downloading weather data by location
-        //
+        ApiUtilities.getApiInterface()?.getCurrentWeatherData(latitude,longitude,API_KEY)?.enqueue(object:Callback<ModelClass>
         {
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onResponse(call: Call<ModelClass>, response: Response<ModelClass>) {
                 if(response.isSuccessful)
                 {
-                    setDataOnView(response.body())//we show the downloaded data in our UI
+                    setDataOnView(response.body())
                 }
             }
 
-            override fun onFailure(call: Call<ModelClass>, t: Throwable) {//if you can't get a response from API
+            override fun onFailure(call: Call<ModelClass>, t: Throwable) {
                 Toast.makeText(applicationContext, "ERROR", Toast.LENGTH_SHORT).show()
             }
 
@@ -165,16 +140,8 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setDataOnView(body: ModelClass?) {
-        /**
-         * Display of downloaded data in the user interface
-         *@param[body] Data class with created objects with information to be retrieved
-         *
-         * */
-
-        //setting data to be displayed in the UI
 
         val sdf=SimpleDateFormat("dd/MM/yyyy hh:mm")
         val currentDate=sdf.format(Date())
@@ -191,7 +158,6 @@ class MainActivity : AppCompatActivity() {
         activityMainBinding.tvHumidity.text =body.main.humidity.toString()+" %"
         activityMainBinding.tvWindSpeed.text =body.wind.speed.toString() + " m/s"
 
-        //showing the temperature in farenheit
         activityMainBinding.tvTempFarenhite.text=""+((kelvinToCelsius(body.main.temp)).times(1.8).plus(32).roundToInt())
         activityMainBinding.etGetCityName.setText(body.name)
 
@@ -200,12 +166,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateUI(id: Int) {
-        /**
-         *Method that updates the user interface with certain backgrounds and icons
-         *
-         * @param[id] fetched ID from the 'weather' object
-         *
-         * */
+
         if(id in 200..232){
             //thunderstorm
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
@@ -355,12 +316,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun kelvinToCelsius(temp: Double):Double{
-        /**
-         * Converting temperature from Kelvin to Celsius
-         *
-         * @param[temp] Temperature value
-         * */
+    private fun kelvinToCelsius(temp: Double):Double{
         var intTemp = temp
         intTemp = intTemp.minus(273)
         return intTemp.toBigDecimal().setScale(1,RoundingMode.UP).toDouble()
@@ -368,11 +324,6 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun timeStampToLocalDate(timestamp: Long):String{
-        /**
-         *Convert timestamp to local time
-         *
-         * @param[timestamp] Downloaded timestamp from API
-         * */
         val localTime = timestamp.let {
             Instant.ofEpochSecond(it)
                 .atZone(ZoneId.systemDefault())
@@ -382,40 +333,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isLocationEnabled():Boolean{
-        /**
-         * Checks if localization is enabled
-         * @return: True or false
-         * */
         val locationManager:LocationManager=getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)||locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+
     }
 
     private fun requestPermission(){
-        /**
-         *Request to share your location
-         * */
-        ActivityCompat.requestPermissions(//state what permits are needed
+        ActivityCompat.requestPermissions(
             this, arrayOf(
-                android.Manifest.permission.ACCESS_COARSE_LOCATION,//type of licence
-                android.Manifest.permission.ACCESS_FINE_LOCATION),
-                PERMISSION_REQUEST_ACCESS_LOCATION
-            )
+                android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ),
+            PERMISSION_REQUEST_ACCESS_LOCATION
+        )
     }
-
     companion object{
         private const val PERMISSION_REQUEST_ACCESS_LOCATION=100
         const val API_KEY = "3c96abe2a7a108897efdce05cca3becf"
     }
 
-
     private fun checkPermissions(): Boolean
     {
-        /**
-         * Verifies that permission to share a location has been granted
-         * @return: True or False
-         *
-         * */
-        if(ActivityCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_COARSE_LOCATION)//check if it is on
+        if(ActivityCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_COARSE_LOCATION)
         ==PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION)
         ==PackageManager.PERMISSION_GRANTED)
         {
@@ -429,24 +368,17 @@ class MainActivity : AppCompatActivity() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        /**
-         * Shows the result whether the location request was accepted by the user or rejected
-         *@return: Returns the text 'granted', 'denied'
-         *
-         * */
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if (requestCode == PERMISSION_REQUEST_ACCESS_LOCATION)
         {
             if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
-                //information displayed on the permit granted
                 Toast.makeText(applicationContext,"Granted", Toast.LENGTH_SHORT).show()
                 getCurrentLocation()
             }
             else
             {
-                //displayed information for permit rejection
                 Toast.makeText(applicationContext, "Denied", Toast.LENGTH_SHORT).show()
             }
         }

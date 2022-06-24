@@ -310,7 +310,7 @@
                                     android:textSize="@dimen/text_med"
                                     android:gravity="center"
                                     android:textColor="@color/white"
-                                    android:text="@string/pressure"></TextView>
+                                    android:text="@string/temperature_in_f"></TextView>
 
 
                             </LinearLayout>
@@ -358,7 +358,7 @@
                                     android:textSize="@dimen/text_med"
                                     android:gravity="center"
                                     android:textColor="@color/white"
-                                    android:text="@string/pressure"></TextView>
+                                    android:text="@string/humidity"></TextView>
 
 
                             </LinearLayout>
@@ -419,7 +419,7 @@
                                     android:textSize="@dimen/text_med"
                                     android:gravity="center"
                                     android:textColor="@color/white"
-                                    android:text="@string/pressure"></TextView>
+                                    android:text="@string/wind_speed"></TextView>
 
 
                             </LinearLayout>
@@ -467,7 +467,7 @@
                                     android:textSize="@dimen/text_med"
                                     android:gravity="center"
                                     android:textColor="@color/white"
-                                    android:text="@string/pressure"></TextView>
+                                    android:text="@string/sunrise"></TextView>
 
 
                             </LinearLayout>
@@ -515,7 +515,7 @@
                                     android:textSize="@dimen/text_med"
                                     android:gravity="center"
                                     android:textColor="@color/white"
-                                    android:text="@string/pressure"></TextView>
+                                    android:text="@string/sunset"></TextView>
 
 
                             </LinearLayout>
