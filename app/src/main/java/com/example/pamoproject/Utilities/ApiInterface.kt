@@ -8,7 +8,7 @@ import retrofit2.http.Query
 
 interface ApiInterface {
 
-    @GET("weather")
+    @GET("weather")//przekazanie tych 3 rzeczy
     fun getCurrentWeatherData(
         @Query("lat") latitude:String,
         @Query("lon") longitude:String,
